@@ -6,12 +6,12 @@ import { ServiceEntity } from '../entities/ServiceEntity';
 import { AccountRepository } from '../repositories/AccountRepository';
 
 const CreateServiceInput = z.object({
-  owner_account_id: z.string().uuid(),
-  name: z.string().min(1).max(100),
+  owner_account_id: ServiceShape.shape.owner_account_id,
+  name: ServiceShape.shape.name,
 });
 
 const UpdateServiceInput = z.object({
-  name: z.string().min(1).max(100).optional(),
+  name: ServiceShape.shape.name.optional(),
 });
 
 export class ServiceService {

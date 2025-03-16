@@ -6,12 +6,12 @@ import { AccountEntity } from '../entities/AccountEntity';
 
 // Input validation schemas
 const CreateAccountInput = z.object({
-  username: z.string().min(1).max(50),
+  username: AccountShape.shape.username,
 });
 
 const UpdateAccountInput = z.object({
-  username: z.string().min(1).max(50).optional(),
-  number_of_services: z.number().int().nonnegative().optional(),
+  username: AccountShape.shape.username.optional(),
+  number_of_services: AccountShape.shape.number_of_services.optional(),
 });
 
 export class AccountService {
