@@ -9,7 +9,7 @@ import { Service } from '../shapes';
 @Entity({
   name: 'Service',
   primaryKey: {
-    partitionKey: 'ACCOUNT#{{owner_accountId}}',
+    partitionKey: 'ACCOUNT#{{owner_account_id}}',
     sortKey: 'SERVICE#{{id}}',
   },
 })

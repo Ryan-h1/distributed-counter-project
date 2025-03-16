@@ -10,7 +10,9 @@
     "@typedorm/common": "^1.15.4",
     "@typedorm/core": "^1.15.4",
     "@typedorm/document-client": "^1.15.4",
+    "@types/uuid": "^10.0.0",
     "elysia": "latest",
+    "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
