@@ -3,6 +3,7 @@ import { ServiceRepository } from '../repositories/ServiceRepository';
 import { ServiceShape } from '../shapes';
 import { z } from 'zod';
 import { ServiceEntity } from '../entities/ServiceEntity';
+import { AccountRepository } from '../repositories/AccountRepository';
 
 const CreateServiceInput = z.object({
   owner_account_id: z.string().uuid(),
@@ -15,14 +16,22 @@ const UpdateServiceInput = z.object({
 
 export class ServiceService {
   private repository: ServiceRepository;
+  private accountRepository: AccountRepository;
 
   constructor() {
     this.repository = new ServiceRepository();
+    this.accountRepository = new AccountRepository();
   }
 
   async createService(input: unknown) {
     // Validate input
     const { owner_account_id, name } = CreateServiceInput.parse(input);
+
+    // Check if account exists
+    const account = await this.accountRepository.findOne(owner_account_id);
+    if (!account) {
+      throw new Error('Account not found');
+    }
 
     // Create service entity
     const service = new ServiceEntity();
@@ -33,7 +42,15 @@ export class ServiceService {
     // Validate complete entity before saving
     ServiceShape.parse(service);
 
-    return await this.repository.create(service);
+    // Create the service and increment the counter in a transaction
+    const createdService =
+      await this.repository.createServiceWithCounterIncrement(
+        service,
+        owner_account_id,
+      );
+
+    // Return the created service
+    return createdService;
   }
 
   async getService(id: string) {
@@ -67,7 +84,25 @@ export class ServiceService {
     // Validate UUID format
     z.string().uuid().parse(id);
 
-    await this.repository.delete(id);
+    // Get the service to be deleted
+    const service = await this.repository.findOne(id);
+    if (!service) {
+      throw new Error('Service not found');
+    }
+
+    // Get the account to get the current counter value
+    const account = await this.accountRepository.findOne(
+      service.owner_account_id,
+    );
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    // Delete the service and decrement the counter in a transaction
+    await this.repository.deleteServiceWithCounterDecrement(
+      id,
+      service.owner_account_id,
+    );
   }
 
   async listServices() {

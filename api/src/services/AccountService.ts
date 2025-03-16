@@ -73,8 +73,8 @@ export class AccountService {
 
   async listAccounts() {
     const accounts = await this.repository.findAll();
-    
+
     // Validate each account in the list
     return z.array(AccountShape).parse(accounts);
   }
-} 
+}

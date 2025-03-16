@@ -19,4 +19,4 @@ export const serviceRoutes = new Elysia()
   .delete('/services/:id', async ({ params: { id } }) => {
     await serviceService.deleteService(id);
     return { success: true };
-  }); 
+  });
