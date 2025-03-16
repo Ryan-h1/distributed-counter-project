@@ -1,0 +1,20 @@
+{
+  "name": "app",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.767.0",
+    "@typedorm/common": "^1.15.4",
+    "@typedorm/core": "^1.15.4",
+    "@typedorm/document-client": "^1.15.4",
+    "elysia": "latest",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}
