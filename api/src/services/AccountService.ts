@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AccountRepository } from '../repositories/AccountRepository';
-import { AccountShape } from '../shapes';
-import { z } from 'zod';
 import { AccountEntity } from '../entities/AccountEntity';
+import { Account, AccountShape } from '../shapes';
+import { t } from 'elysia';
 
-// Input validation schemas
-const CreateAccountInput = z.object({
-  username: AccountShape.shape.username,
+// Input validation schemas using Elysia's type system
+export const CreateAccountInput = t.Object({
+  username: AccountShape.properties.username,
 });
 
-const UpdateAccountInput = z.object({
-  username: AccountShape.shape.username.optional(),
-  number_of_services: AccountShape.shape.number_of_services.optional(),
+export const UpdateAccountInput = t.Object({
+  username: t.Optional(AccountShape.properties.username),
+  number_of_services: t.Optional(AccountShape.properties.number_of_services),
 });
 
 export class AccountService {
@@ -21,60 +21,44 @@ export class AccountService {
     this.repository = new AccountRepository();
   }
 
-  async createAccount(input: unknown) {
-    // Validate input
-    const { username } = CreateAccountInput.parse(input);
-
+  async createAccount(
+    input: typeof CreateAccountInput.static,
+  ): Promise<Account> {
     // Create account entity
     const account = new AccountEntity();
     account.id = uuidv4();
-    account.username = username;
+    account.username = input.username;
     account.number_of_services = 0;
-
-    // Validate complete entity before saving
-    AccountShape.parse(account);
 
     return await this.repository.create(account);
   }
 
-  async getAccount(id: string) {
-    // Validate UUID format
-    z.string().uuid().parse(id);
-
+  async getAccount(id: string): Promise<Account> {
     const account = await this.repository.findOne(id);
     if (!account) {
       throw new Error('Account not found');
     }
 
-    // Validate retrieved data
-    return AccountShape.parse(account);
+    return account;
   }
 
-  async updateAccount(id: string, input: unknown) {
-    // Validate UUID format and input data
-    z.string().uuid().parse(id);
-    const data = UpdateAccountInput.parse(input);
-
+  async updateAccount(
+    id: string,
+    data: typeof UpdateAccountInput.static,
+  ): Promise<Account> {
     const account = await this.repository.update(id, data);
     if (!account) {
       throw new Error('Account not found');
     }
 
-    // Validate updated data
-    return AccountShape.parse(account);
+    return account;
   }
 
-  async deleteAccount(id: string) {
-    // Validate UUID format
-    z.string().uuid().parse(id);
-
+  async deleteAccount(id: string): Promise<void> {
     await this.repository.delete(id);
   }
 
-  async listAccounts() {
-    const accounts = await this.repository.findAll();
-
-    // Validate each account in the list
-    return z.array(AccountShape).parse(accounts);
+  async listAccounts(): Promise<Account[]> {
+    return await this.repository.findAll();
   }
 }

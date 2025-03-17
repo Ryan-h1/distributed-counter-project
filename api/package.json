@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.767.0",
+    "@elysiajs/swagger": "^1.2.2",
     "@typedorm/common": "^1.15.4",
     "@typedorm/core": "^1.15.4",
     "@typedorm/document-client": "^1.15.4",

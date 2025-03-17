@@ -1,6 +1,7 @@
-import { connection } from '../config/dynamodb';
+import { connection, documentClient } from '../config/dynamodb';
 import { AccountEntity } from '../entities/AccountEntity';
 import { EntityManager } from '@typedorm/core';
+import { AttributeValue } from '@aws-sdk/client-dynamodb';
 
 export class AccountRepository {
   private entityManager: EntityManager;
@@ -31,7 +32,9 @@ export class AccountRepository {
   }
 
   async findAll(): Promise<AccountEntity[]> {
-    const result = await this.entityManager.find(AccountEntity, {});
-    return result.items;
+    // Use the connection's scanManager to scan for all accounts
+    const scanManager = connection.scanManager;
+    const result = await scanManager.find(AccountEntity);
+    return result.items || [];
   }
 }

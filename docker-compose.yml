@@ -13,12 +13,15 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+      target: development
     ports:
       - "3000:3000"
+    volumes:
+      - ./api/src:/app/src
     depends_on:
       - dynamodb-local
     environment:
-      - DYNAMODB_ENDPOINT=http://localhost:8000
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
       - AWS_REGION=local

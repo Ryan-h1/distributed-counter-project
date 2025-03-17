@@ -1,23 +1,23 @@
-import { z } from 'zod';
+import { t } from 'elysia';
 
 // Account schema
-export const AccountShape = z.object({
-  id: z.string().uuid(),
-  username: z.string().min(1).max(50),
-  number_of_services: z.number().int().nonnegative(),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
+export const AccountShape = t.Object({
+  id: t.String({ format: 'uuid' }),
+  username: t.String({ minLength: 1, maxLength: 50 }),
+  number_of_services: t.Integer({ minimum: 0 }),
+  created_at: t.String({ format: 'date-time' }),
+  updated_at: t.String({ format: 'date-time' }),
 });
 
-export type Account = z.infer<typeof AccountShape>;
+export type Account = typeof AccountShape.static;
 
 // Service schema
-export const ServiceShape = z.object({
-  id: z.string().uuid(),
-  owner_account_id: z.string().uuid(),
-  name: z.string().min(1).max(100),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
+export const ServiceShape = t.Object({
+  id: t.String({ format: 'uuid' }),
+  owner_account_id: t.String({ format: 'uuid' }),
+  name: t.String({ minLength: 1, maxLength: 100 }),
+  created_at: t.String({ format: 'date-time' }),
+  updated_at: t.String({ format: 'date-time' }),
 });
 
-export type Service = z.infer<typeof ServiceShape>;
+export type Service = typeof ServiceShape.static;
