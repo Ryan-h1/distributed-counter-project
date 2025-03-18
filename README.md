@@ -4,6 +4,7 @@
 
 - [Docker](https://www.docker.com)
 - [bun](https://bun.sh/)
+- [K6](https://k6.io/)
 
 ## Usage
 
@@ -20,6 +21,14 @@ Navigate to the API directory first to use its compiler
 ```sh
 cd api
 bun src/scripts/create-table.ts
+```
+
+### Load Tests
+
+Run constant rate tests
+
+```sh
+k6 run load-tests/constant-rate-test.js
 ```
 
 ## Dataflow
