@@ -13,6 +13,7 @@
     "@typedorm/document-client": "^1.15.4",
     "@types/uuid": "^10.0.0",
     "elysia": "latest",
+    "logixlysia": "^4.1.2",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },

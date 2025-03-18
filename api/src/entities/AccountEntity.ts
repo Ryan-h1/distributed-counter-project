@@ -23,6 +23,9 @@ export class AccountEntity implements Account {
   @Attribute()
   number_of_services!: number;
 
+  @Attribute()
+  service_limit!: number;
+
   @AutoGenerateAttribute({
     strategy: AUTO_GENERATE_ATTRIBUTE_STRATEGY.ISO_DATE,
   })

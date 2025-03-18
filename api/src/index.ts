@@ -3,6 +3,7 @@ import { swagger } from '@elysiajs/swagger';
 import { accountRoutes } from './routes/accounts';
 import { serviceRoutes } from './routes/services';
 import { healthRoutes } from './routes/health';
+import logixlysia from 'logixlysia';
 
 const app = new Elysia()
   .use(
@@ -14,6 +15,24 @@ const app = new Elysia()
           description:
             'API for managing accounts and services with distributed counters',
         },
+      },
+    }),
+  )
+  .use(
+    logixlysia({
+      config: {
+        showStartupMessage: false,
+        timestamp: {
+          translateTime: 'yyyy-mm-dd HH:MM:ss',
+        },
+        ip: true,
+        logFilePath: './logs/api.log',
+        customLogFormat:
+          '🦊 {now} {level} {duration} {method} {pathname} {status} {message} {ip}',
+        // Uncomment to only show errors and warnings in the logs
+        // logFilter: {
+        //   level: ['ERROR', 'WARNING'],
+        // },
       },
     }),
   )
