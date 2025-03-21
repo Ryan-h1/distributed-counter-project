@@ -13,6 +13,7 @@ export const dynamoDBClient = new DynamoDBClient({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'dummy',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy',
   },
+  maxAttempts: 0,
 });
 
 // Create DocumentClient

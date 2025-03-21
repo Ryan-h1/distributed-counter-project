@@ -53,7 +53,7 @@ export const options = {
       maxVUs: 1000, // Reduced max VUs
 
       // Specific scenario configuration
-      rate: 400, // 1000 TPS total
+      rate: 200, // 1000 TPS total
       timeUnit: '1s',
     },
   },
@@ -102,24 +102,24 @@ export default function (data) {
 
   // If service was created successfully, delete it
   if (createSuccess) {
-    // const serviceId = createResponse.json('id');
-    // const deleteResponse = http.del(
-    //   `http://localhost:3000/services/${serviceId}?ownerAccountId=${sharedAccountId}`,
-    //   null,
-    //   {
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //   },
-    // );
+    const serviceId = createResponse.json('id');
+    const deleteResponse = http.del(
+      `http://localhost:3000/services/${serviceId}?ownerAccountId=${sharedAccountId}`,
+      null,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
 
-    // // Check if deletion was successful
-    // const deleteSuccess = check(deleteResponse, {
-    //   'delete status is 200': (r) => r.status === 200,
-    // });
+    // Check if deletion was successful
+    const deleteSuccess = check(deleteResponse, {
+      'delete status is 200': (r) => r.status === 200,
+    });
 
-    // // Record overall success (both create and delete must succeed)
-    // successRate.add(deleteSuccess);
+    // Record overall success (both create and delete must succeed)
+    successRate.add(deleteSuccess);
   } else {
     // If creation failed, record failure
     successRate.add(false);
