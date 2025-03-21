@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AccountRepository } from '../repositories/AccountRepository';
 import { AccountEntity } from '../entities/AccountEntity';
 import { Account, AccountShape } from '../shapes';
+import { DEFAULT_MAX_SERVICES } from '../config/constants';
 import { t } from 'elysia';
 
 // Input validation schemas using Elysia's type system
@@ -12,6 +13,9 @@ export const CreateAccountInput = t.Object({
 export const UpdateAccountInput = t.Object({
   username: t.Optional(AccountShape.properties.username),
   number_of_services: t.Optional(AccountShape.properties.number_of_services),
+  max_number_of_services: t.Optional(
+    AccountShape.properties.max_number_of_services,
+  ),
 });
 
 export class AccountService {
@@ -29,6 +33,7 @@ export class AccountService {
     account.id = uuidv4();
     account.username = input.username;
     account.number_of_services = 0;
+    account.max_number_of_services = DEFAULT_MAX_SERVICES;
 
     return await this.repository.create(account);
   }

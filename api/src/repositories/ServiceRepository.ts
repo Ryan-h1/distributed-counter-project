@@ -1,9 +1,8 @@
-import { connection, documentClient } from '../config/dynamodb';
+import { connection } from '../config/dynamodb';
 import { ServiceEntity } from '../entities/ServiceEntity';
-import { EntityManager, WriteTransaction } from '@typedorm/core';
+import { Condition, EntityManager, WriteTransaction } from '@typedorm/core';
 import { AccountEntity } from '../entities/AccountEntity';
-import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
-import { AttributeValue } from '@aws-sdk/client-dynamodb';
+import { DEFAULT_MAX_SERVICES } from '../config/constants';
 
 export class ServiceRepository {
   private entityManager: EntityManager;
@@ -75,6 +74,7 @@ export class ServiceRepository {
    */
   async createServiceWithCounterIncrement(
     service: ServiceEntity,
+    maxNumberOfServices: number,
   ): Promise<ServiceEntity> {
     // Create a transaction to create the service and increment the account's counter
     const transaction = new WriteTransaction()
@@ -85,6 +85,13 @@ export class ServiceRepository {
         {
           number_of_services: {
             ADD: 1,
+          },
+        },
+        {
+          where: {
+            number_of_services: {
+              LE: maxNumberOfServices,
+            },
           },
         },
       );

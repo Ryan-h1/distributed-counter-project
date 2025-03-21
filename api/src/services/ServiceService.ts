@@ -43,7 +43,10 @@ export class ServiceService {
 
     // Create the service and increment the counter in a transaction
     const createdService =
-      await this.repository.createServiceWithCounterIncrement(service);
+      await this.repository.createServiceWithCounterIncrement(
+        service,
+        account.max_number_of_services,
+      );
 
     // Return the created service
     return createdService;

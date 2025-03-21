@@ -5,6 +5,7 @@ import {
   AUTO_GENERATE_ATTRIBUTE_STRATEGY,
 } from '@typedorm/common';
 import { Account } from '../shapes';
+import { DEFAULT_MAX_SERVICES } from '../config/constants';
 
 @Entity({
   name: 'Account',
@@ -22,6 +23,9 @@ export class AccountEntity implements Account {
 
   @Attribute()
   number_of_services!: number;
+
+  @Attribute()
+  max_number_of_services: number = DEFAULT_MAX_SERVICES;
 
   @Attribute()
   service_limit!: number;
