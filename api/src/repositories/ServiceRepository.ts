@@ -2,8 +2,6 @@ import { connection, documentClient } from '../config/dynamodb';
 import { ServiceEntity } from '../entities/ServiceEntity';
 import { EntityManager, WriteTransaction } from '@typedorm/core';
 import { AccountEntity } from '../entities/AccountEntity';
-import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
-import { AttributeValue } from '@aws-sdk/client-dynamodb';
 
 export class ServiceRepository {
   private entityManager: EntityManager;
