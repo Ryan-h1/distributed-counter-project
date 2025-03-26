@@ -1,13 +1,14 @@
-import { connection, documentClient } from '../config/dynamodb';
+import { connection } from '../config/dynamodb';
 import { AccountEntity } from '../entities/AccountEntity';
-import { EntityManager } from '@typedorm/core';
-import { AttributeValue } from '@aws-sdk/client-dynamodb';
+import { EntityManager, TransactionManager } from '@typedorm/core';
 
 export class AccountRepository {
   private entityManager: EntityManager;
+  private transactionManger: TransactionManager;
 
   constructor() {
     this.entityManager = connection.entityManager;
+    this.transactionManger = connection.transactionManger;
   }
 
   async create(account: AccountEntity): Promise<AccountEntity> {

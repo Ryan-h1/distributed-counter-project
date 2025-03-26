@@ -1,15 +1,20 @@
 import { connection } from '../config/dynamodb';
 import { ServiceEntity } from '../entities/ServiceEntity';
-import { Condition, EntityManager, WriteTransaction } from '@typedorm/core';
+import {
+  EntityManager,
+  TransactionManager,
+  WriteTransaction,
+} from '@typedorm/core';
 import { AccountEntity } from '../entities/AccountEntity';
 import { DEFAULT_MAX_SERVICES } from '../config/constants';
 
 export class ServiceRepository {
   private entityManager: EntityManager;
-  private transactionManger = connection.transactionManger;
+  private transactionManger: TransactionManager;
 
   constructor() {
     this.entityManager = connection.entityManager;
+    this.transactionManger = connection.transactionManger;
   }
 
   async findOne(

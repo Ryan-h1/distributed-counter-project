@@ -45,3 +45,7 @@ docker-volumes/
 **/*.tgz
 **/*.log
 **/*.bun
+
+**/dist
+
+lambda/packaged.yaml

@@ -1,13 +1,21 @@
 services:
-  dynamodb-local:
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    image: "amazon/dynamodb-local:latest"
-    container_name: dynamodb-local
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
     ports:
-      - "8000:8000"
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,lambda,s3,cloudformation,iam
+      - DEBUG=1
+      - PERSISTENCE=1
     volumes:
-      - "./docker-volumes/dynamodb:/home/dynamodblocal/data"
-    working_dir: /home/dynamodblocal
+      - "./docker-volumes/localstack:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   api:
     build:
@@ -19,10 +27,10 @@ services:
     volumes:
       - ./api/src:/app/src
     depends_on:
-      - dynamodb-local
+      - localstack
     environment:
-      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - DYNAMODB_ENDPOINT=http://localstack:4566
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
-      - AWS_REGION=local
+      - AWS_REGION=us-east-1
 
