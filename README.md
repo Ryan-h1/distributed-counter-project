@@ -5,13 +5,17 @@
 - [Docker](https://www.docker.com)
 - [bun](https://bun.sh/)
 - [K6](https://k6.io/)
+- [Node.js](https://nodejs.org/en)
+- npm
+- AWS SAM CLI
+- AWS CLI
 
 ## Usage
 
 ### Run Containers
 
 ```sh
-docker compose up -d
+docker compose up
 ```
 
 ### Create DynamoDB Tables
@@ -21,6 +25,15 @@ Navigate to the API directory first to use its compiler
 ```sh
 cd api
 bun src/scripts/create-table.ts
+```
+
+### Deploy Lambda Functions
+
+```sh
+chmod +x lambda/build.sh
+chmod +x lambda/deploy.sh
+./lambda/build.sh
+./lambda/deploy.sh
 ```
 
 ### Load Tests
