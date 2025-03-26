@@ -29,11 +29,14 @@ bun src/scripts/create-table.ts
 
 ### Deploy Lambda Functions
 
+Navigate to the lambda directory first to change the context of the shell script execution
+
 ```sh
-chmod +x lambda/build.sh
-chmod +x lambda/deploy.sh
-./lambda/build.sh
-./lambda/deploy.sh
+cd lambda
+chmod +x build.sh
+chmod +x deploy.sh
+./build.sh
+./deploy.sh
 ```
 
 ### Load Tests
