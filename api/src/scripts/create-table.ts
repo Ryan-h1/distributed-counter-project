@@ -28,6 +28,10 @@ async function createTable() {
       ReadCapacityUnits: 10000,
       WriteCapacityUnits: 10000,
     },
+    StreamSpecification: {
+      StreamEnabled: true,
+      StreamViewType: 'NEW_AND_OLD_IMAGES'
+    }
   });
 
   try {
