@@ -25,8 +25,8 @@ async function createTable() {
       },
     ],
     ProvisionedThroughput: {
-      ReadCapacityUnits: 5,
-      WriteCapacityUnits: 5,
+      ReadCapacityUnits: 10000,
+      WriteCapacityUnits: 10000,
     },
   });
 

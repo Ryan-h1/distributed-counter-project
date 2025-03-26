@@ -14,6 +14,9 @@ export const dynamoDBClient = new DynamoDBClient({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy',
   },
   maxAttempts: 0,
+  requestHandler: {
+    abortSignal: AbortSignal.timeout(3000), // 3 second timeout
+  },
 });
 
 // Create DocumentClient
