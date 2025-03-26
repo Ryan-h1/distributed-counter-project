@@ -7,8 +7,8 @@ import { ServiceEntity } from '../entities/ServiceEntity';
 
 // Create DynamoDB client
 export const dynamoDBClient = new DynamoDBClient({
-  region: process.env.AWS_REGION || 'local',
-  endpoint: process.env.DYNAMODB_ENDPOINT || 'http://localhost:8000',
+  region: process.env.AWS_REGION || 'us-east-1',
+  endpoint: process.env.DYNAMODB_ENDPOINT || 'http://localhost:4566',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'dummy',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy',

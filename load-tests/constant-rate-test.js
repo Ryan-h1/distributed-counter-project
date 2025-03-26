@@ -53,7 +53,7 @@ export const options = {
       maxVUs: 1000, // Reduced max VUs
 
       // Specific scenario configuration
-      rate: 200, // 1000 TPS total
+      rate: 1000, // 1000 TPS total
       timeUnit: '1s',
     },
   },
