@@ -1,0 +1,1 @@
+{"Records":[{"eventName":"INSERT","dynamodb":{"NewImage":{"id":{"S":"test-service-manual"},"name":{"S":"Test Service Manual"},"owner_account_id":{"S":"test-account-1"},"created_at":{"S":"2023-03-27T18:00:00.000Z"}}}}]}

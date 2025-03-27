@@ -10,6 +10,16 @@ Resources:
       Handler: dist/index.handler
       Runtime: nodejs18.x
       CodeUri: hello-function/
-      Description: A simple Lambda function that says Hello using TypeScript
+      Description: A simple Lambda function that logs when a new Service is created
       MemorySize: 128
-      Timeout: 3 
+      Timeout: 3
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'dynamodb:GetRecords'
+                - 'dynamodb:GetShardIterator'
+                - 'dynamodb:DescribeStream'
+                - 'dynamodb:ListStreams'
+              Resource: '*' 

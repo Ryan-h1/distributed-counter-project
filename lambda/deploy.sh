@@ -28,10 +28,9 @@ PYTHONWARNINGS="ignore:Unverified HTTPS request" AWS_ENDPOINT_URL=http://localho
 echo "Deploying to LocalStack..."
 PYTHONWARNINGS="ignore:Unverified HTTPS request" AWS_ENDPOINT_URL=http://localhost:4566 sam deploy \
   --template-file packaged.yaml \
-  --stack-name hello-stack \
+  --stack-name lambda-function-stack \
   --capabilities CAPABILITY_IAM \
   --region us-east-1
 
 echo "Deployment complete!"
-echo "To test the function, run:"
-echo "aws --endpoint-url=http://localhost:4566 lambda invoke --function-name hello-function output.json && cat output.json" 
+echo "Now run ./setup-trigger.sh to connect the Lambda to your DynamoDB stream" 
