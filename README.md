@@ -18,25 +18,44 @@
 docker compose up
 ```
 
-### Create DynamoDB Tables
-
-Navigate to the API directory first to use its compiler
+### Shut Down Containers
 
 ```sh
-cd api
-bun src/scripts/create-table.ts
+docker compose down -v --remove-orphans
 ```
+
+### Grant Execution Privileges to The Shell Scripts
+
+```sh
+chmod +x infrastructure/deploy-cloudformation.sh && \
+chmod +x infrastructure/teardown-cloudformation.sh && \
+chmod +x lambda/service-counter/deploy-lambda.sh
+```
+
+### Deploy Local AWS Infrastructure
+
+Note that the Docker containers must be running
+
+```sh
+./infrastructure/deploy-cloudformation.sh
+```
+
+### Tear Down Local AWS Infrastructure
+
+Note that the Docker containers must be running
+
+```sh
+./infrastructure/teardown-cloudformation.sh
+```
+
 
 ### Deploy Lambda Functions
 
 Navigate to the lambda directory first to change the context of the shell script execution
 
 ```sh
-cd lambda
-chmod +x build.sh
-chmod +x deploy.sh
-./build.sh
-./deploy.sh
+cd lambda/service-counter
+./deploy-lambda.sh
 ```
 
 ### Load Tests
@@ -46,6 +65,15 @@ Run constant rate tests
 ```sh
 k6 run load-tests/constant-rate-test.js
 ```
+
+## Running The Program
+
+Execute the commands from the Usage section in the following order
+
+1. Grant Execution Privileges to The Shell Scripts
+2. Run Containers
+3. Deploy Local AWS Infrastructure
+4. Deploy Lambda Functions
 
 ## Dataflow
 
