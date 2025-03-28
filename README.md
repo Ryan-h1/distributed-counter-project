@@ -29,7 +29,7 @@ docker compose down -v --remove-orphans
 ```sh
 chmod +x infrastructure/deploy-cloudformation.sh && \
 chmod +x infrastructure/teardown-cloudformation.sh && \
-chmod +x lambda/service-counter/deploy-lambda.sh && \
+chmod +x lambda/service-counter/package-lambda.sh && \
 chmod +x lambda/service-counter/get-logs.sh
 ```
 
@@ -49,10 +49,16 @@ Note that the Docker containers must be running
 ./infrastructure/teardown-cloudformation.sh
 ```
 
-### Deploy Lambda Functions
+### Upload Lambda Functions
 
 ```sh
-./lambda/service-counter/deploy-lambda.sh
+./lambda/service-counter/package-lambda.sh
+```
+
+### Get Lambda Logs
+
+```sh
+./lambda/service-counter/get-logs.sh
 ```
 
 ### Load Tests
@@ -69,8 +75,8 @@ Execute the commands from the Usage section in the following order
 
 1. Grant Execution Privileges to The Shell Scripts
 2. Run Containers
-3. Deploy Local AWS Infrastructure
-4. Deploy Lambda Functions
+3. Upload Lambda Functions
+4. Deploy Local AWS Infrastructure
 
 ## Known Issues
 
