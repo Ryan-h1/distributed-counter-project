@@ -3,6 +3,7 @@ import { swagger } from '@elysiajs/swagger';
 import { accountRoutes } from './routes/accounts';
 import { serviceRoutes } from './routes/services';
 import { healthRoutes } from './routes/health';
+import { countRoutes } from './routes/counts';
 import logixlysia from 'logixlysia';
 
 const app = new Elysia()
@@ -38,6 +39,7 @@ const app = new Elysia()
   )
   .use(accountRoutes)
   .use(serviceRoutes)
+  .use(countRoutes)
   .use(healthRoutes)
   .listen(3000);
 

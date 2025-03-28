@@ -48,7 +48,10 @@ Resources:
                   - dynamodb:GetShardIterator
                   - dynamodb:DescribeStream
                   - dynamodb:ListStreams
-                Resource: !GetAtt DistributedCounterTable.StreamArn
+                  - dynamodb:UpdateItem
+                Resource: 
+                  - !GetAtt DistributedCounterTable.StreamArn
+                  - !GetAtt DistributedCounterTable.Arn
 
   ServiceCounterFunction:
     Type: AWS::Lambda::Function
@@ -58,6 +61,9 @@ Resources:
       Runtime: nodejs16.x
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DistributedCounterTable
       Code:
         S3Bucket: localstack-lambda-artifacts # LocalStack will intercept this
         S3Key: service-counter/index.zip # Path where your code will be packaged
@@ -71,3 +77,6 @@ Resources:
       EventSourceArn: !GetAtt DistributedCounterTable.StreamArn
       FunctionName: !GetAtt ServiceCounterFunction.Arn
       StartingPosition: TRIM_HORIZON
+      FilterCriteria:
+        Filters:
+          - Pattern: '{"dynamodb":{"Keys":{"SK":{"S":[{"prefix":"SERVICE#"}]}}}}' # Only process events with SK starting with SERVICE#

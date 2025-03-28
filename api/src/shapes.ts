@@ -11,7 +11,6 @@ export const AccountShape = t.Object({
     minimum: 0,
   }),
   created_at: t.String({ format: 'date-time' }),
-  updated_at: t.String({ format: 'date-time' }),
 });
 
 export type Account = typeof AccountShape.static;
@@ -19,10 +18,19 @@ export type Account = typeof AccountShape.static;
 // Service schema
 export const ServiceShape = t.Object({
   id: t.String({ format: 'uuid' }),
-  owner_account_id: t.String({ format: 'uuid' }),
+  account_id: t.String({ format: 'uuid' }),
   name: t.String({ minLength: 1, maxLength: 100 }),
   created_at: t.String({ format: 'date-time' }),
-  updated_at: t.String({ format: 'date-time' }),
 });
 
 export type Service = typeof ServiceShape.static;
+
+// Counter schema
+export const CountShape = t.Object({
+  account_id: t.String({ format: 'uuid' }),
+  count_type: t.String({ minLength: 1, maxLength: 50 }),
+  count_value: t.Integer({ minimum: 0 }),
+  created_at: t.String({ format: 'date-time' }),
+});
+
+export type Count = typeof CountShape.static;

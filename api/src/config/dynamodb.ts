@@ -4,6 +4,7 @@ import { DocumentClientV3 } from '@typedorm/document-client';
 import { Table } from '@typedorm/common';
 import { AccountEntity } from '../entities/AccountEntity';
 import { ServiceEntity } from '../entities/ServiceEntity';
+import { CountEntity } from '../entities/CountEntity';
 
 // Create DynamoDB client
 export const dynamoDBClient = new DynamoDBClient({
@@ -33,7 +34,7 @@ const table = new Table({
 export const connection = createConnection({
   name: 'default',
   table,
-  entities: [AccountEntity, ServiceEntity],
+  entities: [AccountEntity, ServiceEntity, CountEntity],
   documentClient,
 });
 

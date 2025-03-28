@@ -86,7 +86,7 @@ export class ServiceRepository {
       .addCreateItem(service)
       .addUpdateItem(
         AccountEntity,
-        { id: service.owner_account_id },
+        { id: service.account_id },
         {
           number_of_services: {
             ADD: 1,
@@ -110,7 +110,7 @@ export class ServiceRepository {
         `Transaction failed in createServiceWithCounterIncrement: ${error.message}`,
         {
           serviceId: service.id,
-          accountId: service.owner_account_id,
+          accountId: service.account_id,
           error,
         },
       );
@@ -131,11 +131,11 @@ export class ServiceRepository {
     const transaction = new WriteTransaction()
       .addDeleteItem(ServiceEntity, {
         id: service.id,
-        owner_account_id: service.owner_account_id,
+        owner_account_id: service.account_id,
       })
       .addUpdateItem(
         AccountEntity,
-        { id: service.owner_account_id },
+        { id: service.account_id },
         {
           number_of_services: {
             ADD: -1,
@@ -151,7 +151,7 @@ export class ServiceRepository {
         `Transaction failed in deleteServiceWithCounterDecrement: ${error.message}`,
         {
           serviceId: service.id,
-          accountId: service.owner_account_id,
+          accountId: service.account_id,
           error,
         },
       );
@@ -180,7 +180,7 @@ export class ServiceRepository {
       batch.forEach((service) => {
         transaction.addDeleteItem(ServiceEntity, {
           id: service.id,
-          owner_account_id: service.owner_account_id,
+          owner_account_id: service.account_id,
         });
       });
 
