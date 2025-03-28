@@ -1,8 +1,13 @@
 #!/bin/bash
 
+# Store the original directory
+ORIGINAL_DIR=$(pwd)
+
+# Change to the script's directory
+cd "$(dirname "$0")"
+
 export AWS_ACCESS_KEY_ID=dummy
 export AWS_SECRET_ACCESS_KEY=dummy
-export AWS_DEFAULT_REGION=us-east-1
 
 ENDPOINT="http://localhost:4566"
 TABLE_NAME="distributed-counter"
@@ -13,6 +18,7 @@ SET_ENDPOINT="--endpoint-url=$ENDPOINT"
 SET_FUNCTION_NAME="--function-name $FUNCTION_NAME"
 SET_TABLE_NAME="--table-name $TABLE_NAME"
 SET_REGION="--region $REGION"
+
 # 1. Check if the DynamoDB table exists and has streams enabled
 echo "Checking if DynamoDB table exists with streams enabled..."
 aws dynamodb describe-table \
@@ -80,6 +86,7 @@ $SET_REGION \
 $SET_TABLE_NAME \
 --query 'Table.LatestStreamArn' \
 --output text)
+echo "Table Latest Stream ARN: $TABLE_ARN"
 
 # 7. Delete the event source mapping if it exists
 echo "Checking for existing event source mappings for function: $FUNCTION_NAME..."
@@ -107,5 +114,8 @@ $SET_FUNCTION_NAME \
 --event-source $TABLE_ARN \
 --batch-size 1 \
 --starting-position TRIM_HORIZON
+
+# Change back to the original directory at the end
+cd "$ORIGINAL_DIR"
 
 echo "Deployment of $FUNCTION_NAME complete!"
