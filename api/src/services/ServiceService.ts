@@ -7,7 +7,7 @@ import { t } from 'elysia';
 
 // Input validation schemas using Elysia's type system
 export const CreateServiceInput = t.Object({
-  owner_account_id: ServiceShape.properties.owner_account_id,
+  account_id: ServiceShape.properties.account_id,
   name: ServiceShape.properties.name,
 });
 
@@ -27,10 +27,10 @@ export class ServiceService {
   async createService(
     input: typeof CreateServiceInput.static,
   ): Promise<Service> {
-    const { owner_account_id, name } = input;
+    const { account_id, name } = input;
 
     // Check if account exists
-    const account = await this.accountRepository.findOne(owner_account_id);
+    const account = await this.accountRepository.findOne(account_id);
     if (!account) {
       throw new Error('Account not found');
     }
@@ -38,7 +38,7 @@ export class ServiceService {
     // Create service entity
     const service = new ServiceEntity();
     service.id = uuidv4();
-    service.owner_account_id = owner_account_id;
+    service.account_id = account_id;
     service.name = name;
 
     // Create the service and increment the counter in a transaction
@@ -81,9 +81,7 @@ export class ServiceService {
     }
 
     // Get the account to get the current counter value
-    const account = await this.accountRepository.findOne(
-      service.owner_account_id,
-    );
+    const account = await this.accountRepository.findOne(service.account_id);
     if (!account) {
       throw new Error('Account not found');
     }

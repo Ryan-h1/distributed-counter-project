@@ -34,9 +34,4 @@ export class AccountEntity implements Account {
     strategy: AUTO_GENERATE_ATTRIBUTE_STRATEGY.ISO_DATE,
   })
   created_at!: string;
-
-  @AutoGenerateAttribute({
-    strategy: AUTO_GENERATE_ATTRIBUTE_STRATEGY.ISO_DATE,
-  })
-  updated_at!: string;
 }

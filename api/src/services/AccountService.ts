@@ -35,7 +35,7 @@ export class AccountService {
     account.number_of_services = 0;
     account.max_number_of_services = DEFAULT_MAX_SERVICES;
 
-    return await this.repository.create(account);
+    return await this.repository.createWithCounter(account);
   }
 
   async getAccount(id: string): Promise<Account> {

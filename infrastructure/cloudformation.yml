@@ -22,4 +22,61 @@ Resources:
         WriteCapacityUnits: 10000
       StreamSpecification:
         StreamEnabled: true
-        StreamViewType: NEW_AND_OLD_IMAGES 
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBStreamAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:DescribeStream
+                  - dynamodb:ListStreams
+                  - dynamodb:UpdateItem
+                Resource: 
+                  - !GetAtt DistributedCounterTable.StreamArn
+                  - !GetAtt DistributedCounterTable.Arn
+
+  ServiceCounterFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: service-counter
+      Handler: index.handler
+      Runtime: nodejs16.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DistributedCounterTable
+      Code:
+        S3Bucket: localstack-lambda-artifacts # LocalStack will intercept this
+        S3Key: service-counter/index.zip # Path where your code will be packaged
+      Timeout: 50
+
+  ServiceCounterEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt DistributedCounterTable.StreamArn
+      FunctionName: !GetAtt ServiceCounterFunction.Arn
+      StartingPosition: TRIM_HORIZON
+      FilterCriteria:
+        Filters:
+          - Pattern: '{"dynamodb":{"Keys":{"SK":{"S":[{"prefix":"SERVICE#"}]}}}}' # Only process events with SK starting with SERVICE#

@@ -1,27 +1,26 @@
 import {
   Entity,
-  Attribute,
   AutoGenerateAttribute,
+  Attribute,
   AUTO_GENERATE_ATTRIBUTE_STRATEGY,
 } from '@typedorm/common';
-import { Service } from '../shapes';
 
 @Entity({
-  name: 'Service',
+  name: 'count',
   primaryKey: {
     partitionKey: 'ACCOUNT#{{account_id}}',
-    sortKey: 'SERVICE#{{id}}',
+    sortKey: 'COUNT#{{count_type}}',
   },
 })
-export class ServiceEntity implements Service {
-  @Attribute()
-  id!: string;
-
+export class CountEntity {
   @Attribute()
   account_id!: string;
 
   @Attribute()
-  name!: string;
+  count_type!: string;
+
+  @Attribute()
+  count_value!: number;
 
   @AutoGenerateAttribute({
     strategy: AUTO_GENERATE_ATTRIBUTE_STRATEGY.ISO_DATE,

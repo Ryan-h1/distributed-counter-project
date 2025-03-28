@@ -29,7 +29,8 @@ docker compose down -v --remove-orphans
 ```sh
 chmod +x infrastructure/deploy-cloudformation.sh && \
 chmod +x infrastructure/teardown-cloudformation.sh && \
-chmod +x lambda/service-counter/deploy-lambda.sh
+chmod +x lambda/service-counter/package-lambda.sh && \
+chmod +x lambda/service-counter/get-logs.sh
 ```
 
 ### Deploy Local AWS Infrastructure
@@ -48,14 +49,16 @@ Note that the Docker containers must be running
 ./infrastructure/teardown-cloudformation.sh
 ```
 
-
-### Deploy Lambda Functions
-
-Navigate to the lambda directory first to change the context of the shell script execution
+### Upload Lambda Functions
 
 ```sh
-cd lambda/service-counter
-./deploy-lambda.sh
+./lambda/service-counter/package-lambda.sh
+```
+
+### Get Lambda Logs
+
+```sh
+./lambda/service-counter/get-logs.sh
 ```
 
 ### Load Tests
@@ -72,8 +75,15 @@ Execute the commands from the Usage section in the following order
 
 1. Grant Execution Privileges to The Shell Scripts
 2. Run Containers
-3. Deploy Local AWS Infrastructure
-4. Deploy Lambda Functions
+3. Upload Lambda Functions
+4. Deploy Local AWS Infrastructure
+
+## Known Issues
+
+LocalStack is finicky, and sometimes DynamoDB streams appear to be created as Kinesis streams instead
+of DynamoDB streams. If you're getting an error like `An error occurred (InvalidParameterValueException) when calling the CreateEventSourceMapping operation: Stream not found: arn:aws:dynamodb:us-east-1:000000000000:table/distributed-counter/stream/2025-03-28T17:36:19.565`, when deploying Lambda functions, then you're
+likely encountering [this issue](https://github.com/localstack/localstack/issues/10885). Try deleting
+ your `docker-volumes` folder and re-running `docker compose up --build` to build fresh containers.
 
 ## Dataflow
 
