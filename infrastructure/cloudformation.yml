@@ -61,7 +61,6 @@ Resources:
       Runtime: nodejs22.x
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 4096
-      ReservedConcurrentExecutions: 4 # Limits concurrent executions to 4
       Environment:
         Variables:
           TABLE_NAME: !Ref DistributedCounterTable
@@ -78,7 +77,6 @@ Resources:
       Runtime: nodejs22.x
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 4096
-      ReservedConcurrentExecutions: 4 # Limits concurrent executions to 4
       Environment:
         Variables:
           TABLE_NAME: !Ref DistributedCounterTable
