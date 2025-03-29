@@ -62,7 +62,6 @@ export class ServiceService {
     service.name = name;
     service.deleted = false;
     service.create_counter_processed = false;
-    service.delete_counter_processed = false;
 
     // Create the service and increment the counter in a transaction
     const createdService =

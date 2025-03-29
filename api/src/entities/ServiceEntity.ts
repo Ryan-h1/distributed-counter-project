@@ -33,7 +33,4 @@ export class ServiceEntity implements Service {
 
   @Attribute()
   create_counter_processed!: boolean;
-
-  @Attribute()
-  delete_counter_processed!: boolean;
 }

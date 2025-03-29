@@ -1,10 +1,10 @@
 {
-  "name": "service-counter",
+  "name": "service-insert-counter",
   "version": "1.0.0",
-  "description": "Lambda function to handle service counter updates",
+  "description": "Lambda function to handle service insert counter updates",
   "main": "index.js",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/lib-dynamodb": "^3.0.0"
   }
-}
+} 

@@ -29,8 +29,7 @@ docker compose down -v --remove-orphans
 ```sh
 chmod +x infrastructure/deploy-cloudformation.sh && \
 chmod +x infrastructure/teardown-cloudformation.sh && \
-chmod +x lambda/service-counter/package-lambda.sh && \
-chmod +x lambda/service-counter/get-logs.sh
+chmod +x lambda/package-lambdas.sh
 ```
 
 ### Deploy Local AWS Infrastructure
@@ -52,13 +51,7 @@ Note that the Docker containers must be running
 ### Upload Lambda Functions
 
 ```sh
-./lambda/service-counter/package-lambda.sh
-```
-
-### Get Lambda Logs
-
-```sh
-./lambda/service-counter/get-logs.sh
+./lambda/package-lambdas.sh
 ```
 
 ### Load Tests
