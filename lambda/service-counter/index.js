@@ -1,5 +1,9 @@
 'use strict';
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const {
+  DynamoDBDocumentClient,
+  TransactWriteCommand,
+} = require('@aws-sdk/lib-dynamodb');
 
 const logger = {
   info: (message) => console.log(message),
@@ -15,14 +19,16 @@ const logger = {
   },
 };
 
-AWS.config.update({
+const client = new DynamoDBClient({
   region: process.env.AWS_REGION || 'us-east-1',
   endpoint: process.env.AWS_ENDPOINT_URL || `http://localhost:4566`,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'dummy',
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'dummy',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy',
+  },
 });
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dynamodb = DynamoDBDocumentClient.from(client);
 
 exports.handler = async (event, context) => {
   logger.info(`Processing ${event.Records.length} records`);
@@ -45,23 +51,24 @@ exports.handler = async (event, context) => {
 
       const serviceId = sortKey.replace('SERVICE#', '');
       const accountId = record.dynamodb.Keys.PK.S.replace('ACCOUNT#', '');
+      const newService = record.dynamodb.NewImage;
+      if (!serviceId) {
+        throw new Error('No service ID');
+      }
+      if (!accountId) {
+        throw new Error('No account ID');
+      }
+      if (!newService) {
+        throw new Error('Expected a non-null new service image');
+      }
 
       if (record.eventName === 'INSERT') {
-        const newService = record.dynamodb.NewImage;
-        if (!newService) {
-          throw new Error('Expected a non-null new service image');
-        }
-
-        // 1. Conditionally updates the service to mark it as processed (only if not already processed)
-        // 2. Increments the counter for this account
-        const params = {
+        const command = new TransactWriteCommand({
           TransactItems: [
             {
-              // First operation: Mark the service record as processed
               Update: {
                 TableName: process.env.TABLE_NAME || 'distributed-counter',
                 Key: {
-                  // Using the correct composite keys based on your entity definition
                   PK: `ACCOUNT#${accountId}`,
                   SK: `SERVICE#${serviceId}`,
                 },
@@ -74,7 +81,6 @@ exports.handler = async (event, context) => {
               },
             },
             {
-              // Second operation: Increment the counter
               Update: {
                 TableName: process.env.TABLE_NAME || 'distributed-counter',
                 Key: {
@@ -88,21 +94,19 @@ exports.handler = async (event, context) => {
               },
             },
           ],
-        };
+        });
 
-        // Log parameters for debugging
         logger.debug('Transaction params:');
-        logger.debug(params);
+        logger.debug(command);
 
         try {
-          // Execute the transaction
-          await dynamodb.transactWrite(params).promise();
-          logger.info('Counter successfully updated for service:', serviceId);
+          await dynamodb.send(command);
+          logger.info(
+            `Counter successfully incremented for service: ${serviceId}`,
+          );
         } catch (error) {
-          // If the error is a ConditionalCheckFailedException, it means another Lambda
-          // instance already processed it.
           if (
-            error.code === 'TransactionCanceledException' &&
+            error.name === 'TransactionCanceledException' &&
             error.message &&
             error.message.includes('ConditionalCheckFailed')
           ) {
@@ -110,13 +114,71 @@ exports.handler = async (event, context) => {
               `Service ${serviceId} already processed. Skipping counter update.`,
             );
           } else {
-            // Any other error should be re-thrown to trigger Lambda retry
-            logger.error('Failed to update counter:', error);
+            logger.error('Failed to increment counter:', error);
             throw error;
           }
         }
       } else if (record.eventName === 'MODIFY') {
-        // If delete is set to true and delete_counter_processed is false, decrement the counter
+        // If deleted is set to true and delete_counter_processed is false, decrement the counter
+        if (newService.deleted.BOOL !== true) {
+          logger.info(
+            `Skipping service delete because deleted is not true: ${JSON.stringify(
+              newService.deleted,
+            )}`,
+          );
+          continue;
+        }
+
+        const command = new TransactWriteCommand({
+          TransactItems: [
+            {
+              Delete: {
+                TableName: process.env.TABLE_NAME || 'distributed-counter',
+                Key: {
+                  PK: `ACCOUNT#${accountId}`,
+                  SK: `SERVICE#${serviceId}`,
+                },
+                ConditionExpression: 'attribute_exists(PK)',
+              },
+            },
+            {
+              Update: {
+                TableName: process.env.TABLE_NAME || 'distributed-counter',
+                Key: {
+                  PK: `ACCOUNT#${accountId}`,
+                  SK: 'COUNT#SERVICES',
+                },
+                UpdateExpression: 'ADD count_value :dec',
+                ExpressionAttributeValues: {
+                  ':dec': -1,
+                },
+              },
+            },
+          ],
+        });
+
+        logger.debug('Transaction params:');
+        logger.debug(command);
+
+        try {
+          await dynamodb.send(command);
+          logger.info(
+            `Counter successfully decremented for service: ${serviceId}`,
+          );
+        } catch (error) {
+          if (
+            error.name === 'TransactionCanceledException' &&
+            error.message &&
+            error.message.includes('ConditionalCheckFailed')
+          ) {
+            logger.info(
+              `Service ${serviceId} already processed. Skipping counter update.`,
+            );
+          } else {
+            logger.error('Failed to decrement counter:', error);
+            throw error;
+          }
+        }
       }
     }
 

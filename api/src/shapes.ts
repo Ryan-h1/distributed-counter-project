@@ -32,7 +32,7 @@ export type Service = typeof ServiceShape.static;
 export const CountShape = t.Object({
   account_id: t.String({ format: 'uuid' }),
   count_type: t.String({ minLength: 1, maxLength: 50 }),
-  count_value: t.Integer({ minimum: 0 }),
+  count_value: t.Integer({ default: 0 }),
   created_at: t.String({ format: 'date-time' }),
 });
 
