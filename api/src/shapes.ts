@@ -23,7 +23,6 @@ export const ServiceShape = t.Object({
   created_at: t.String({ format: 'date-time' }),
   deleted: t.Boolean({ default: false }),
   create_counter_processed: t.Boolean({ default: false }),
-  delete_counter_processed: t.Boolean({ default: false }),
 });
 
 export type Service = typeof ServiceShape.static;
@@ -32,7 +31,7 @@ export type Service = typeof ServiceShape.static;
 export const CountShape = t.Object({
   account_id: t.String({ format: 'uuid' }),
   count_type: t.String({ minLength: 1, maxLength: 50 }),
-  count_value: t.Integer({ minimum: 0 }),
+  count_value: t.Integer({ default: 0 }),
   created_at: t.String({ format: 'date-time' }),
 });
 

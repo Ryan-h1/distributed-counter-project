@@ -51,9 +51,13 @@ export class AccountRepository {
   }
 
   async findOne(id: string): Promise<AccountEntity | undefined> {
-    return await this.entityManager.findOne(AccountEntity, {
-      id,
-    });
+    // Ensure the id is properly formed
+    if (!id || typeof id !== 'string') {
+      console.error(`Invalid account ID: ${id} (${typeof id})`);
+      return undefined;
+    }
+
+    return await this.entityManager.findOne(AccountEntity, { id });
   }
 
   async update(

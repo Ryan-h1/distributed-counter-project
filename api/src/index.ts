@@ -37,6 +37,10 @@ const app = new Elysia()
       },
     }),
   )
+  .onError(({ code, error }) => {
+    console.error(error);
+    return new Response(error.toString());
+  })
   .use(accountRoutes)
   .use(serviceRoutes)
   .use(countRoutes)

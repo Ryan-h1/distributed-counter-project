@@ -4,6 +4,8 @@ import { ServiceEntity } from '../entities/ServiceEntity';
 import { AccountRepository } from '../repositories/AccountRepository';
 import { Service, ServiceShape } from '../shapes';
 import { t } from 'elysia';
+import { CountRepository } from '../repositories/CountRepository';
+import { COUNTER_TYPE_SERVICES } from '../config/constants';
 
 // Input validation schemas using Elysia's type system
 export const CreateServiceInput = t.Object({
@@ -18,10 +20,12 @@ export const UpdateServiceInput = t.Object({
 export class ServiceService {
   private repository: ServiceRepository;
   private accountRepository: AccountRepository;
+  private countRepository: CountRepository;
 
   constructor() {
     this.repository = new ServiceRepository();
     this.accountRepository = new AccountRepository();
+    this.countRepository = new CountRepository();
   }
 
   async createService(
@@ -34,7 +38,20 @@ export class ServiceService {
     if (!account) {
       throw new Error('Account not found');
     }
-    if (account.number_of_services >= account.max_number_of_services) {
+    const eventualConsistencyCounter = await this.countRepository.findOne(
+      account_id,
+      COUNTER_TYPE_SERVICES,
+    );
+    if (!eventualConsistencyCounter) {
+      throw new Error('Eventual consistency counter not found');
+    }
+    // The best effort counter may undercount the number of services, so we take the max
+    // of the accurate eventual consistency counter and the best effort counter
+    const greatestCounter = Math.max(
+      account.number_of_services,
+      eventualConsistencyCounter.count_value,
+    );
+    if (greatestCounter >= account.max_number_of_services) {
       throw new Error('Maximum number of services reached for this account');
     }
 
@@ -45,14 +62,10 @@ export class ServiceService {
     service.name = name;
     service.deleted = false;
     service.create_counter_processed = false;
-    service.delete_counter_processed = false;
 
     // Create the service and increment the counter in a transaction
     const createdService =
-      await this.repository.createServiceWithCounterIncrement(
-        service,
-        account.max_number_of_services,
-      );
+      await this.repository.createServiceWithCounterIncrement(service);
 
     // Return the created service
     return createdService;
@@ -84,12 +97,6 @@ export class ServiceService {
     const service = await this.repository.findOne(id, ownerAccountId);
     if (!service) {
       throw new Error('Service not found');
-    }
-
-    // Get the account to get the current counter value
-    const account = await this.accountRepository.findOne(service.account_id);
-    if (!account) {
-      throw new Error('Account not found');
     }
 
     // Mark service as deleted and decrement the counter in a transaction
