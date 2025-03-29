@@ -49,11 +49,11 @@ export const options = {
       // Common scenario configuration
       startTime: '0s',
       duration: '20s',
-      preAllocatedVUs: 10, // Reduced to prevent server overload
+      preAllocatedVUs: 500, // Reduced to prevent server overload
       maxVUs: 1000, // Reduced max VUs
 
       // Specific scenario configuration
-      rate: 1, // 1000 TPS total
+      rate: 200, // 1000 TPS total
       timeUnit: '1s',
     },
   },

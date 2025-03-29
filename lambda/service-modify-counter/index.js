@@ -39,18 +39,19 @@ exports.handler = async (event, context) => {
     // Process records sequentially to ensure proper error handling
     for (const record of event.Records) {
       // We already have filter criteria in AWS, but double-check for safety
+      if (record.eventName !== 'MODIFY') {
+        throw new Error('Event name is not MODIFY');
+      }
       const sortKey = record.dynamodb.Keys.SK.S;
-
+      const serviceId = sortKey.replace('SERVICE#', '');
+      const accountId = record.dynamodb.Keys.PK.S.replace('ACCOUNT#', '');
+      const newService = record.dynamodb.NewImage;
       if (!sortKey) {
         throw new Error('No sort key');
       }
       if (!sortKey.startsWith('SERVICE#')) {
         throw new Error('Sort key indicates that this is not a service');
       }
-
-      const serviceId = sortKey.replace('SERVICE#', '');
-      const accountId = record.dynamodb.Keys.PK.S.replace('ACCOUNT#', '');
-      const newService = record.dynamodb.NewImage;
       if (!serviceId) {
         throw new Error('No service ID');
       }
