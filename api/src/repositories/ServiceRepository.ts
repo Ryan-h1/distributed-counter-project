@@ -6,7 +6,6 @@ import {
   WriteTransaction,
 } from '@typedorm/core';
 import { AccountEntity } from '../entities/AccountEntity';
-import { DEFAULT_MAX_SERVICES } from '../config/constants';
 
 export class ServiceRepository {
   private entityManager: EntityManager;
@@ -21,23 +20,42 @@ export class ServiceRepository {
     id: string,
     ownerAccountId: string,
   ): Promise<ServiceEntity | undefined> {
-    return await this.entityManager.findOne(ServiceEntity, {
+    const service = await this.entityManager.findOne(ServiceEntity, {
       id,
       owner_account_id: ownerAccountId,
     });
+
+    // Don't return deleted services
+    if (service && service.deleted) {
+      return undefined;
+    }
+
+    return service;
   }
 
   async update(
     id: string,
     data: Partial<ServiceEntity>,
   ): Promise<ServiceEntity | undefined> {
-    return await this.entityManager.update(ServiceEntity, { id }, data);
+    const service = await this.entityManager.update(
+      ServiceEntity,
+      { id },
+      data,
+    );
+
+    // Don't return deleted services
+    if (service && service.deleted) {
+      return undefined;
+    }
+
+    return service;
   }
 
   async findAll(): Promise<ServiceEntity[]> {
     const scanManager = connection.scanManager;
     const result = await scanManager.find(ServiceEntity);
-    return result.items || [];
+    // Filter out deleted services
+    return (result.items || []).filter((service) => !service.deleted);
   }
 
   async findAllByOwnerAccountId(
@@ -62,7 +80,11 @@ export class ServiceRepository {
       );
 
       if (result.items) {
-        allItems.push(...result.items);
+        // Filter out deleted services before adding to allItems
+        const nonDeletedItems = result.items.filter(
+          (service) => !service.deleted,
+        );
+        allItems.push(...nonDeletedItems);
       }
 
       cursor = result.cursor;
@@ -81,10 +103,12 @@ export class ServiceRepository {
     service: ServiceEntity,
     maxNumberOfServices: number,
   ): Promise<ServiceEntity> {
-    // Create a transaction to create the service and increment the account's counter
-    const transaction = new WriteTransaction()
-      .addCreateItem(service)
-      .addUpdateItem(
+    try {
+      // Create the service
+      await this.entityManager.create(service);
+
+      // Update the account's service counter using atomic ADD operation
+      await this.entityManager.update(
         AccountEntity,
         { id: service.account_id },
         {
@@ -92,22 +116,12 @@ export class ServiceRepository {
             ADD: 1,
           },
         },
-        {
-          where: {
-            number_of_services: {
-              LE: maxNumberOfServices,
-            },
-          },
-        },
       );
 
-    try {
-      // Execute the transaction
-      await this.transactionManger.write(transaction);
       return service;
     } catch (error: any) {
       console.error(
-        `Transaction failed in createServiceWithCounterIncrement: ${error.message}`,
+        `Failed in createServiceWithCounterIncrement: ${error.message}`,
         {
           serviceId: service.id,
           accountId: service.account_id,
@@ -126,13 +140,19 @@ export class ServiceRepository {
   async deleteServiceWithCounterDecrement(
     service: ServiceEntity,
   ): Promise<void> {
-    // Create a transaction to delete the service and decrement the account's counter
+    // Create a transaction to mark the service as deleted and decrement the account's counter
     // Using ADD with -1 for atomic decrement
     const transaction = new WriteTransaction()
-      .addDeleteItem(ServiceEntity, {
-        id: service.id,
-        owner_account_id: service.account_id,
-      })
+      .addUpdateItem(
+        ServiceEntity,
+        {
+          id: service.id,
+          account_id: service.account_id,
+        },
+        {
+          deleted: true,
+        },
+      )
       .addUpdateItem(
         AccountEntity,
         { id: service.account_id },
@@ -176,12 +196,18 @@ export class ServiceRepository {
       // Create a transaction for this batch
       const transaction = new WriteTransaction();
 
-      // Add delete operations for each service in the batch
+      // Add update operations to mark each service as deleted
       batch.forEach((service) => {
-        transaction.addDeleteItem(ServiceEntity, {
-          id: service.id,
-          owner_account_id: service.account_id,
-        });
+        transaction.addUpdateItem(
+          ServiceEntity,
+          {
+            id: service.id,
+            account_id: service.account_id,
+          },
+          {
+            deleted: true,
+          },
+        );
       });
 
       // Decrement the counter by the exact number of items in this batch

@@ -27,4 +27,13 @@ export class ServiceEntity implements Service {
     strategy: AUTO_GENERATE_ATTRIBUTE_STRATEGY.ISO_DATE,
   })
   created_at!: string;
+
+  @Attribute()
+  deleted!: boolean;
+
+  @Attribute()
+  create_counter_processed!: boolean;
+
+  @Attribute()
+  delete_counter_processed!: boolean;
 }

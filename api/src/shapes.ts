@@ -21,6 +21,9 @@ export const ServiceShape = t.Object({
   account_id: t.String({ format: 'uuid' }),
   name: t.String({ minLength: 1, maxLength: 100 }),
   created_at: t.String({ format: 'date-time' }),
+  deleted: t.Boolean({ default: false }),
+  create_counter_processed: t.Boolean({ default: false }),
+  delete_counter_processed: t.Boolean({ default: false }),
 });
 
 export type Service = typeof ServiceShape.static;

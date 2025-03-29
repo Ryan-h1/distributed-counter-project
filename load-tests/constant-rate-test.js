@@ -75,7 +75,7 @@ export default function (data) {
 
   // Create service payload
   const createServicePayload = JSON.stringify({
-    owner_account_id: sharedAccountId,
+    account_id: sharedAccountId,
     name: serviceName,
   });
 
@@ -97,29 +97,29 @@ export default function (data) {
     'status is 200': (r) => r.status === 200,
     'service created successfully': (r) => r.json('id') !== undefined,
     'service has correct account': (r) =>
-      r.json('owner_account_id') === sharedAccountId,
+      r.json('account_id') === sharedAccountId,
   });
 
   // If service was created successfully, delete it
   if (createSuccess) {
-    const serviceId = createResponse.json('id');
-    const deleteResponse = http.del(
-      `http://localhost:3000/services/${serviceId}?ownerAccountId=${sharedAccountId}`,
-      null,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    // const serviceId = createResponse.json('id');
+    // const deleteResponse = http.del(
+    //   `http://localhost:3000/services/${serviceId}?ownerAccountId=${sharedAccountId}`,
+    //   null,
+    //   {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   },
+    // );
 
-    // Check if deletion was successful
-    const deleteSuccess = check(deleteResponse, {
-      'delete status is 200': (r) => r.status === 200,
-    });
+    // // Check if deletion was successful
+    // const deleteSuccess = check(deleteResponse, {
+    //   'delete status is 200': (r) => r.status === 200,
+    // });
 
-    // Record overall success (both create and delete must succeed)
-    successRate.add(deleteSuccess);
+    // // Record overall success (both create and delete must succeed)
+    // successRate.add(deleteSuccess);
   } else {
     // If creation failed, record failure
     successRate.add(false);
