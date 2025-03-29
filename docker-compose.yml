@@ -5,7 +5,7 @@ services:
     ports:
       - "4566:4566"
     environment:
-      - SERVICES=dynamodb,lambda,s3,cloudformation,iam,logs
+      - SERVICES=dynamodb,lambda,s3,cloudformation,iam,logs,kinesis
       - DEBUG=0
       - PERSISTENCE=0
     volumes:

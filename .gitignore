@@ -27,6 +27,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+lambda-logs.txt
+
 # local env files
 .env.local
 .env.development.local

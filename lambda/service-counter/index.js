@@ -48,39 +48,75 @@ exports.handler = async (event, context) => {
 
       if (record.eventName === 'INSERT') {
         const newService = record.dynamodb.NewImage;
-        if (newService) {
-          logger.info(`Service Created - ID: ${serviceId}`);
-
-          // Increment the counter for this account
-          const params = {
-            TableName: process.env.TABLE_NAME || 'distributed-counter',
-            Key: {
-              PK: `ACCOUNT#${accountId}`,
-              SK: 'COUNT#SERVICES',
-            },
-            UpdateExpression: 'ADD count_value :inc',
-            ExpressionAttributeValues: {
-              ':inc': 1,
-            },
-            ReturnValues: 'ALL_NEW',
-          };
-
-          // Log parameters for debugging
-          logger.debug('Update params:');
-          logger.debug(params);
-          logger.debug('DynamoDB config:');
-          logger.debug(AWS.config.dynamodb);
-
-          // Use await to ensure we handle errors properly
-          await dynamodb.update(params).promise();
-          logger.info('Counter updated successfully for service:', serviceId);
+        if (!newService) {
+          throw new Error('Expected a non-null new service image');
         }
-      } else if (record.eventName === 'REMOVE') {
-        const oldService = record.dynamodb.OldImage;
-        if (oldService) {
-          logger.info(`Service Removed - ID: ${serviceId}`);
-          // Your logic for handling service deletion
+
+        // 1. Conditionally updates the service to mark it as processed (only if not already processed)
+        // 2. Increments the counter for this account
+        const params = {
+          TransactItems: [
+            {
+              // First operation: Mark the service record as processed
+              Update: {
+                TableName: process.env.TABLE_NAME || 'distributed-counter',
+                Key: {
+                  // Using the correct composite keys based on your entity definition
+                  PK: `ACCOUNT#${accountId}`,
+                  SK: `SERVICE#${serviceId}`,
+                },
+                UpdateExpression: 'SET create_counter_processed = :true',
+                ConditionExpression: 'create_counter_processed = :false',
+                ExpressionAttributeValues: {
+                  ':true': true,
+                  ':false': false,
+                },
+              },
+            },
+            {
+              // Second operation: Increment the counter
+              Update: {
+                TableName: process.env.TABLE_NAME || 'distributed-counter',
+                Key: {
+                  PK: `ACCOUNT#${accountId}`,
+                  SK: 'COUNT#SERVICES',
+                },
+                UpdateExpression: 'ADD count_value :inc',
+                ExpressionAttributeValues: {
+                  ':inc': 1,
+                },
+              },
+            },
+          ],
+        };
+
+        // Log parameters for debugging
+        logger.debug('Transaction params:');
+        logger.debug(params);
+
+        try {
+          // Execute the transaction
+          await dynamodb.transactWrite(params).promise();
+          logger.info('Counter successfully updated for service:', serviceId);
+        } catch (error) {
+          // If the error is a ConditionalCheckFailedException, it means another Lambda
+          // instance already processed it.
+          if (
+            error.code === 'TransactionCanceledException' &&
+            error.message &&
+            error.message.includes('ConditionalCheckFailed')
+          ) {
+            logger.info(
+              `Service ${serviceId} already processed. Skipping counter update.`,
+            );
+          } else {
+            // Any other error should be re-thrown to trigger Lambda retry
+            logger.error('Failed to update counter:', error);
+            throw error;
+          }
         }
+      } else if (record.eventName === 'MODIFY') {
+        // If delete is set to true and delete_counter_processed is false, decrement the counter
       }
     }
 

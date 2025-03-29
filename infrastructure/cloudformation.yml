@@ -60,7 +60,7 @@ Resources:
       Handler: index.handler
       Runtime: nodejs16.x
       Role: !GetAtt LambdaExecutionRole.Arn
-      MemorySize: 128
+      MemorySize: 2048
       Environment:
         Variables:
           TABLE_NAME: !Ref DistributedCounterTable
@@ -72,11 +72,13 @@ Resources:
   ServiceCounterEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
-      BatchSize: 1
+      BatchSize: 50
       Enabled: true
       EventSourceArn: !GetAtt DistributedCounterTable.StreamArn
       FunctionName: !GetAtt ServiceCounterFunction.Arn
       StartingPosition: TRIM_HORIZON
+      FunctionResponseTypes:
+        - ReportBatchItemFailure
       FilterCriteria:
         Filters:
           - Pattern: '{"dynamodb":{"Keys":{"SK":{"S":[{"prefix":"SERVICE#"}]}}}}' # Only process events with SK starting with SERVICE#

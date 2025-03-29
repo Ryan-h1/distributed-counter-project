@@ -34,12 +34,18 @@ export class ServiceService {
     if (!account) {
       throw new Error('Account not found');
     }
+    if (account.number_of_services >= account.max_number_of_services) {
+      throw new Error('Maximum number of services reached for this account');
+    }
 
     // Create service entity
     const service = new ServiceEntity();
     service.id = uuidv4();
     service.account_id = account_id;
     service.name = name;
+    service.deleted = false;
+    service.create_counter_processed = false;
+    service.delete_counter_processed = false;
 
     // Create the service and increment the counter in a transaction
     const createdService =
@@ -86,7 +92,7 @@ export class ServiceService {
       throw new Error('Account not found');
     }
 
-    // Delete the service and decrement the counter in a transaction
+    // Mark service as deleted and decrement the counter in a transaction
     await this.repository.deleteServiceWithCounterDecrement(service);
   }
 
@@ -109,7 +115,7 @@ export class ServiceService {
       throw new Error('Account not found');
     }
 
-    // Delete all services and reset the counter in a transaction
+    // Mark all services as deleted and update the counter in a transaction
     await this.repository.deleteAllServicesByAccountId(accountId);
   }
 }
